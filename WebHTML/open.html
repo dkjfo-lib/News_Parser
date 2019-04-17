@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="style_v.0.2.css">
+</head>
+
+<body>
+<div class="grid" id="container">
+
+    <div class="title">
+        <div class="title_content">
+            <h1>My website TITLE</h1>
+        </div>
+    </div>
+
+    <div class="header">
+        <h2>My website HEADER</h2>
+    </div>
+
+    <div class="sidebar">
+        <h3>Navigation (SIDEBAR)</h3>
+        <button class="searchButton">searchButton_01</button>
+        <button class="searchButton">searchButton_02</button>
+    </div>
+
+    <div class="content">
+        <h3>Page CONTENT</h3>
+
+        <img class="content_Img" src="Images/catatet.png">
+
+        <p>l1</p>
+        <p>l2</p>
+        <table class="content_table" id="table">
+            <tr>
+                <th>row_1</th>
+                <td>cell_1</td>
+                <td>cell_3</td>
+                <td>cell_2</td>
+            </tr>
+        </table>
+
+        <script>
+
+            var array = [["A1","A2","A3"]],
+
+            table = document.getElementById("table");
+
+            for (var i =1;i<table.rows.length;i++){
+
+                for (var j =1;j<table.rows.length;j++){
+                    table.rows[i].cells[i].innerHTML = array[i-1][j];
+                }
+            }
+        </script>
+
+        <img class="content_Img" src="Images/Asuka_angr.jpg">
+
+        <button class="mainButton">END ME</button>
+    </div>
+
+    <div class="footer">
+        Copyright &copy; 2018 __
+    </div>
+
+</div>
+</body>
+</html>
