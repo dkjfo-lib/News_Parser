@@ -1,5 +1,6 @@
 package Parsers;
 
+import SQL.SQL_Adapter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -7,9 +8,11 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
 
 import static Serializer.Serializer.deserializeNewsData;
 import static Serializer.Serializer.serializeNewsData;
+import static java.lang.System.err;
 
 public class Parser_00 extends AbstractParser {
 
@@ -43,12 +46,12 @@ public class Parser_00 extends AbstractParser {
         int counter = 0;
         System.out.println("Found " + content.size() + " top news: ");
         for (Element oneNewsUnit : content) {
-            if (counter < 5){
+            if (counter < 5) {
                 counter++;
                 continue;
             }
 
-            String article= oneNewsUnit.text();
+            String article = oneNewsUnit.text();
             String link = oneNewsUnit.select("a[href]").attr("href"); // "http://example.com/"
 
             link = targetURL + link.substring(5);
@@ -66,7 +69,7 @@ public class Parser_00 extends AbstractParser {
                 article = innerArticle;
             }
 
-            BBC_News[counter-5] = new NewsData(link, article);
+            BBC_News[counter - 5] = new NewsData(link, article);
 
             if (verbose_mode) {
                 System.out.println(String.valueOf(counter - 5) + ". " + BBC_News[counter - 5]);
@@ -80,7 +83,6 @@ public class Parser_00 extends AbstractParser {
     }
 
 
-
     static public void main(String[] args) {
         Parser_00 unit00 = new Parser_00(false);
         try {
@@ -88,14 +90,20 @@ public class Parser_00 extends AbstractParser {
             serializeNewsData(BBC_News);
             NewsData[] somedata = deserializeNewsData();
 
-            for(int i=0; i<BBC_News.length; ++i){
-                System.out.println("News " + i + " : ");
-                System.out.println(somedata[i]);
-                System.out.println(BBC_News[i]);
-                System.out.println();
+            try {
+                SQL_Adapter.WriteToTargetTable(BBC_News);
+            } catch (SQLException | ClassNotFoundException ex) {
+                err.println("Can Not Write to database: \n" + ex);
             }
+
+//            for (int i = 0; i < BBC_News.length; ++i) {
+//                System.out.println("News " + i + " : ");
+//                System.out.println(somedata[i]);
+//                System.out.println(BBC_News[i]);
+//                System.out.println();
+//            }
         } catch (IOException ioe) {
-            System.err.println(ioe.getMessage() + "\n");
+            err.println(ioe.getMessage() + "\n");
             ioe.printStackTrace();
         }
     }
