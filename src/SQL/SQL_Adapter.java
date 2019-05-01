@@ -2,8 +2,9 @@ package SQL;
 
 import Parsers.NewsData;
 
-import java.io.IOException;
 import java.sql.*;
+import java.util.LinkedList;
+import java.util.List;
 
 public class SQL_Adapter {
 
@@ -95,15 +96,44 @@ public class SQL_Adapter {
                 try {
                     statement.executeUpdate();
                     out(statement.toString());
-                }catch (Exception ignore){}
+                } catch (Exception ignore) {
+                }
             }
             System.out.println("All records were inserted into the table\"" + table_Name + "\" successfully...");
         }
     }
 
-//    static String prepareStringToDataBase(String string) {
-//        return string.replaceAll(CRITICAL_CHARACTERS, "");
-//    }
+    //__________READER________________
+
+    public static NewsData[] getAllContent() throws SQLException, ClassNotFoundException {
+        return getAllContent(target_DB_URL, table_name);
+    }
+
+    private static NewsData[] getAllContent(String DB_URL, String table_Name) throws SQLException, ClassNotFoundException {
+        if (!initialized) {
+            Init();
+        }
+        out("Connecting to target database...");
+        List<NewsData> data = new LinkedList<>();
+        try (
+                Connection conn = DriverManager.getConnection(DB_URL, USER_NAME, PASSWORD);
+                Statement statement = conn.createStatement()) {
+            out("getting content from the table\"" + table_Name + "\"...");
+
+            ResultSet resultSet = statement.executeQuery("SELECT * from newsdata.news_test03");
+            while (resultSet.next()) {
+                data.add(
+                        new NewsData(
+                                resultSet.getString(1),
+                                resultSet.getString(2)
+                        ));
+            }
+
+            System.out.println("Content was received from the table\"" + table_Name + "\" successfully...");
+        }
+        NewsData[] dataType = new NewsData[data.size()];
+        return data.toArray(dataType);
+    }
 
     static void out(String message) {
         if (VERBOSE_MODE)

@@ -7,10 +7,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="org1" level="project" />
-    <orderEntry type="library" name="jsoup" level="project" />
-    <orderEntry type="library" name="jsoup-1.11.3" level="project" />
-    <orderEntry type="library" name="org" level="project" />
     <orderEntry type="library" name="jsoup-1.11.31" level="project" />
   </component>
 </module>

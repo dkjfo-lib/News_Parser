@@ -33,7 +33,7 @@ public class JavaHTTPServer implements Runnable {
     public static void main(String[] args) {
         try {
 //            InetSocketAddress currAdress = new InetSocketAddress("92.242.59.6", PORT);
-            InetSocketAddress currAdress = new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(),PORT);
+            InetSocketAddress currAdress = new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), PORT);
             ServerSocket serverSocket = new ServerSocket();
             serverSocket.bind(currAdress);
 
@@ -117,9 +117,18 @@ public class JavaHTTPServer implements Runnable {
                     fileRequested += DEFAULT_FILE;
                 }
 
-                File file = new File(WEB_ROOT, fileRequested);
+                // getPopulatedFile
+                File file;
+                {
+                    File canvasFile = new File(WEB_ROOT, fileRequested);
+                    System.out.println("DEBUG__________"+fileRequested);
+                    if (fileRequested.equals("/"+DEFAULT_FILE))
+                        file = HTML_Builder.populateDoc(canvasFile);
+                    else
+                        file = canvasFile;
+                }
                 int fileLength = (int) file.length();
-                String content = getContentType(fileRequested);
+                String contentType = getContentType(fileRequested);
 
                 // GET method
                 if (method.equals("GET")) {
@@ -129,7 +138,7 @@ public class JavaHTTPServer implements Runnable {
                     out.print("HTTP/1.1 200 OK");
                     out.print("Server: Java HTTP Server from Michale : 1.0");
                     out.print("Date: " + new Date());
-                    out.print("Content-type: " + content);
+                    out.print("Content-type: " + contentType);
                     out.print("Content-length: " + fileLength);
                     out.println();  // very important blank line between header and content
                     out.println();  // very important blank line between header and content
@@ -139,7 +148,7 @@ public class JavaHTTPServer implements Runnable {
                     dataOut.flush();
 
                     if (verbose) {
-                        System.out.println("File " + fileRequested + " of type " + content + " returned");
+                        System.out.println("File " + fileRequested + " of type " + contentType + " returned");
                         System.out.println("File length : " + fileLength + " bytes");
                     }
                 }
