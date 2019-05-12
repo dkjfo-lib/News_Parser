@@ -1,0 +1,152 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: Verdana, Arial, serif;
+}
+
+body {
+    background-color: #ffffff;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr; /*1*/
+    grid-template-rows: 1fr;
+    grid-template-areas: "page_content";
+    grid-gap: 10px;
+    padding: 20px;
+}
+
+.pageItself {
+    border: 8px solid #ff5b5b;
+    background-color: #fafafa;
+    border-radius: 4px;
+
+    grid-area: page_content;
+    display: grid;
+    grid-template-columns: 1fr; /*1*/
+    grid-template-rows: 250px 60px 1fr 30px;
+    grid-template-areas: "title" "header" "content" "footer";
+    grid-gap: 10px;
+
+    padding: 20px;
+}
+
+.newsContent {
+    border: 2px solid #910100;
+    background-color: #ffffff;
+    height: 50px;
+    padding:5px;
+    border-radius: 3px;
+}
+
+p{
+    font-size: 15px;
+    color: #6a6a6a;
+}
+
+a {
+    text-decoration: none;
+    text-align: right;
+}
+
+/* unvisited link */
+a:link {
+    color: black;
+}
+
+/* visited link */
+a:visited {
+    color: black;
+}
+
+/* mouse over link */
+a:hover {
+    color: black;
+}
+
+/* selected link */
+a:active {
+    color: black;
+}
+
+.title {
+    grid-area: title;
+    background-image: url("Images/mt.jpg");
+    /*background-size:  50px;*/
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+    background-size: cover; /* Resize the background image to cover the entire container */
+}
+
+.header {
+    grid-area: header;
+}
+
+.content {
+    grid-area: content;
+    display: grid; /*creates grid inside this class*/
+}
+
+.footer {
+    grid-area: footer;
+}
+
+.title {
+    display: grid;
+    grid-template-rows: 3fr 2fr 1fr;
+    grid-template-areas: "." "content" ".";
+}
+
+h1, th {
+    color: white;
+}
+table{
+    padding: 5px;
+}
+
+.title_content {
+    grid-area: content;
+}
+
+div {
+    border: 1px solid black;
+    border-radius: 2px;
+}
+
+h1, h2, h3, h4 {
+    text-align: center;
+    margin: fill;
+    padding: 20px;
+}
+
+.content_Img {
+    width: 220px;
+    height: 220px;
+}
+
+.pageItself div:nth-child(odd) {
+    background-color: rgba(255, 91, 91, 0.73);
+}
+
+.pageItself div:nth-child(even) {
+    background-color: #fffcfc;
+}
+
+/*if screen is larger than 500px then display this grid*/
+@media screen and (min-width: 540px) {
+    .grid {
+        grid-template-columns: 1fr 500px 1fr; /*1|2|3|*/
+        grid-template-areas: ". page_content .";
+    }
+
+    .content {
+        justify-self: right; /*hor alignment*/
+        align-self: center; /*ver alignment*/
+    }
+
+    .sidebar {
+        justify-self: left;
+        align-self: start;
+    }
+}

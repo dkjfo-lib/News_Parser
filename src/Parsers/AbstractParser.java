@@ -8,7 +8,7 @@ import java.net.URL;
 
 public abstract class AbstractParser {
 
-
+    public abstract NewsData[] parsePage() throws IOException;
     /**
      * Downloads html content of the page on the target url
      * @param URL
@@ -52,6 +52,4 @@ public abstract class AbstractParser {
                 myConn.disconnect();
         }
     }
-
-     abstract NewsData[] parsePage() throws IOException;
 }

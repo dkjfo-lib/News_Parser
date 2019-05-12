@@ -1,62 +1,80 @@
 package Server;
 
 import java.io.*;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.StringTokenizer;
 
-/// Each client handled in a separate thread
-public class JavaHTTPServer implements Runnable {
+public class Server implements Runnable {
 
-    // directory constants
-    final static File WEB_ROOT = new File("WebHTML");//WebHTML
-    final static String DEFAULT_FILE = "open.html";
-    final static String FILE_NOT_FOUND = "404.html";
-    final static String METHOD_NOT_SUPPORTED = "NotSupport.html";
     // PORT
     static final int PORT = 8080;
 
-    // more info mode
-    static final boolean verbose = true;
+    private final ServerSocket serverSocket;
+    private final MyWindow window;
 
-    // Client enter point
-    private Socket connect;
-
-    public JavaHTTPServer(Socket connect) {
-        this.connect = connect;
+    public Server(ServerSocket serverSocket, MyWindow window) {
+        this.serverSocket = serverSocket;
+        this.window = window;
     }
 
-    public static void main(String[] args) {
+    private void out(String message) {
+        window.writeLog(message);
+    }
+
+    public void run() {
+
         try {
 //            InetSocketAddress currAdress = new InetSocketAddress("92.242.59.6", PORT);
             InetSocketAddress currAdress = new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), PORT);
-            ServerSocket serverSocket = new ServerSocket();
             serverSocket.bind(currAdress);
 
-            System.out.println("JavaHTTPServer started.");
-            System.out.println("Listen for connection on HOST : " + serverSocket.getLocalSocketAddress() + "...");
-            System.out.println("Listen for connection on PORT : " + PORT + "...");
-            System.out.println();
+            out("JavaHTTPServer started.");
+            out("Listen for connection on HOST : " + serverSocket.getLocalSocketAddress() + "...");
+            out("Listen for connection on PORT : " + PORT + "...");
 
             // deal in `https://docs.oracle.com/javase/tutorial/networking/sockets/clientServer.html` style
             while (true) {
                 Socket newClientRequest = serverSocket.accept();
                 JavaHTTPServer myServer = new JavaHTTPServer(newClientRequest);
-                if (verbose) {
-                    System.out.println("Connection opened with " + newClientRequest.getInetAddress().getHostName() + ". (" + new Date() + ")");
-                }
+                out("Connection opened with " + newClientRequest.getInetAddress().getHostName() + ". (" + new Date() + ")");
                 // create new thread for the connection
                 Thread thread = new Thread(myServer);
                 thread.start();
             }
 
         } catch (IOException e) {
-            System.err.println("JavaHTTPServer Connection error : " + e.getMessage());
+            out("Server fail : " + e.toString());
         }
+    }
+}
+
+/// Each client handled in a separate thread
+class JavaHTTPServer implements Runnable {
+    // directory constants
+    final static File WEB_ROOT = new File("Resources");
+    final static String DEFAULT_FILE = "open.html";
+    final static String FILE_NOT_FOUND = "404.html";
+    final static String METHOD_NOT_SUPPORTED = "NotSupport.html";
+
+    // more info mode
+    static final boolean verbose = true;
+
+    public static void out(String message) {
+        System.out.println(message);
+    }
+
+    public static void err(String message) {
+        System.err.println(message);
+    }
+
+
+    // Client enter point
+    private Socket connect;
+
+    public JavaHTTPServer(Socket connect) {
+        this.connect = connect;
     }
 
     @Override
@@ -68,7 +86,6 @@ public class JavaHTTPServer implements Runnable {
         String fileRequested = null;
 
         try {
-
             // we read characters from the client via input stream on the socket
             in = new BufferedReader(new InputStreamReader(connect.getInputStream(), StandardCharsets.UTF_8));
 
@@ -80,7 +97,7 @@ public class JavaHTTPServer implements Runnable {
             // get first line of the request from the client
             String input = in.readLine();
             // we parse the request with a string tokenizer
-            System.out.println("in stream : " + input);
+            out("in stream : " + input);
             StringTokenizer parse = new StringTokenizer(input);
             String method = parse.nextToken().toUpperCase();    //
             //we get file request
@@ -88,9 +105,7 @@ public class JavaHTTPServer implements Runnable {
 
             // we support only GET and HEAD methods, we check
             if (!method.equals("GET") && !method.equals("HEAD")) {
-                if (verbose) {
-                    System.out.println("501 Not Implemented : " + method + " method");
-                }
+                out("Error : 501 Not Implemented : " + method + " method");
                 // return `METHOD_NOT_SUPPORTED` page
                 File file = new File(WEB_ROOT, METHOD_NOT_SUPPORTED);
                 int fileLength = (int) file.length();
@@ -121,17 +136,19 @@ public class JavaHTTPServer implements Runnable {
                 File file;
                 {
                     File canvasFile = new File(WEB_ROOT, fileRequested);
-                    System.out.println("DEBUG__________"+fileRequested);
-                    if (fileRequested.equals("/"+DEFAULT_FILE))
+                    if (fileRequested.equals("/" + DEFAULT_FILE))
                         file = HTML_Builder.populateDoc(canvasFile);
                     else
                         file = canvasFile;
                 }
+                out(fileRequested.toString());
+                out(file.toString());
                 int fileLength = (int) file.length();
                 String contentType = getContentType(fileRequested);
 
                 // GET method
                 if (method.equals("GET")) {
+                    out("Success : sending requested file");
                     byte[] fileData = readFileData(file, fileLength);
 
                     // we send HTTP Headers with data to client
@@ -158,7 +175,7 @@ public class JavaHTTPServer implements Runnable {
             try {
                 fileNotFound(out, dataOut, fileRequested);
             } catch (IOException ioe) {
-                System.err.println("Error with file not found exception : " + ioe.getMessage());
+                err("Error : file not found exception : " + ioe.getMessage());
             }
         } catch (IOException ioe) {
             System.err.println("Server error : " + ioe.getMessage());
@@ -169,11 +186,11 @@ public class JavaHTTPServer implements Runnable {
                 dataOut.close();
                 connect.close();
             } catch (IOException ioe) {
-                System.err.println("Error closing stream : " + ioe.getMessage());
+                err("Error : can not close the stream : " + ioe.getMessage());
             }
 
             if (verbose) {
-                System.out.println("Connection closed\n");
+                out("Connection closed\n");
             }
         }
 
@@ -211,7 +228,7 @@ public class JavaHTTPServer implements Runnable {
 
         // we send HTTP Headers with data to client
         out.print("HTTP/1.1 404 File Not Found");
-        out.print("Server: Java HTTP Server from Michale : 1.0");
+        out.print("Server: Java HTTP Server");
         out.print("Date: " + new Date());
         out.print("Content-type: " + content);
         out.print("Content-length: " + fileLength);
