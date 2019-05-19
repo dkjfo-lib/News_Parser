@@ -8,5 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="jsoup-1.11.31" level="project" />
+    <orderEntry type="library" name="jsoup-1.11.3" level="application" />
   </component>
 </module>

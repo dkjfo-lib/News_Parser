@@ -37,7 +37,7 @@ public class Server implements Runnable {
             // deal in `https://docs.oracle.com/javase/tutorial/networking/sockets/clientServer.html` style
             while (true) {
                 Socket newClientRequest = serverSocket.accept();
-                JavaHTTPServer myServer = new JavaHTTPServer(newClientRequest);
+                JavaHTTPServer myServer = new JavaHTTPServer(newClientRequest, window);
                 out("Connection opened with " + newClientRequest.getInetAddress().getHostName() + ". (" + new Date() + ")");
                 // create new thread for the connection
                 Thread thread = new Thread(myServer);
@@ -61,20 +61,19 @@ class JavaHTTPServer implements Runnable {
     // more info mode
     static final boolean verbose = true;
 
-    public static void out(String message) {
-        System.out.println(message);
-    }
-
-    public static void err(String message) {
-        System.err.println(message);
+    public void out(String message) {
+        if (verbose)
+            window.writeLog(message);
     }
 
 
     // Client enter point
     private Socket connect;
+    private MyWindow window;
 
-    public JavaHTTPServer(Socket connect) {
+    public JavaHTTPServer(Socket connect, MyWindow window) {
         this.connect = connect;
+        this.window = window;
     }
 
     @Override
@@ -137,7 +136,7 @@ class JavaHTTPServer implements Runnable {
                 {
                     File canvasFile = new File(WEB_ROOT, fileRequested);
                     if (fileRequested.equals("/" + DEFAULT_FILE))
-                        file = HTML_Builder.populateDoc(canvasFile);
+                        file = new HTML_Builder().populateDoc(canvasFile);
                     else
                         file = canvasFile;
                 }
@@ -164,10 +163,9 @@ class JavaHTTPServer implements Runnable {
                     dataOut.write(fileData, 0, fileLength);
                     dataOut.flush();
 
-                    if (verbose) {
-                        System.out.println("File " + fileRequested + " of type " + contentType + " returned");
-                        System.out.println("File length : " + fileLength + " bytes");
-                    }
+
+                    out("File " + fileRequested + " of type " + contentType + " returned");
+                    out("File length : " + fileLength + " bytes");
                 }
             }
 
@@ -175,7 +173,7 @@ class JavaHTTPServer implements Runnable {
             try {
                 fileNotFound(out, dataOut, fileRequested);
             } catch (IOException ioe) {
-                err("Error : file not found exception : " + ioe.getMessage());
+                out("Error : file not found exception : " + ioe.getMessage());
             }
         } catch (IOException ioe) {
             System.err.println("Server error : " + ioe.getMessage());
@@ -186,7 +184,7 @@ class JavaHTTPServer implements Runnable {
                 dataOut.close();
                 connect.close();
             } catch (IOException ioe) {
-                err("Error : can not close the stream : " + ioe.getMessage());
+                out("Error : can not close the stream : " + ioe.getMessage());
             }
 
             if (verbose) {
@@ -240,8 +238,7 @@ class JavaHTTPServer implements Runnable {
         dataOut.flush();
 
         if (verbose) {
-            System.out.println("File " + fileRequested + " not found");
+            out("File " + fileRequested + " not found");
         }
     }
-
 }

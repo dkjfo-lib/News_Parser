@@ -1,17 +1,17 @@
 package Parsers;
 
-import SQL.SQL_Adapter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
-import java.sql.SQLException;
-import static java.lang.System.err;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Parser_BBC extends AbstractParser {
     private final String targetURL = "https://www.bbc.com/news";
-    private final String targetHTMLElementClass_layer_0 = "gs-o-media__body";
+    private static final String TIME_CLASS_HOLDER = "gs-o-bullet__text date qa-status-date";
+    private static final String News_Holder_CLASS = "gs-c-promo-body gel-1/2@xs gel-1/1@m gs-u-mt@m";
 
     private final boolean verbose_mode;
 
@@ -19,56 +19,36 @@ public class Parser_BBC extends AbstractParser {
         this.verbose_mode = verbose_mode;
     }
 
-
-    /**
-     * target element <div id = "u1276955557987094">...</div>
-     * but it never was caught...
-     * @return
-     */
     @Override
     public NewsData[] parsePage() throws IOException {
-
+        List<NewsData> newsDataList = new LinkedList<>();
         Document doc = Jsoup.connect(targetURL).get();
 
-        Elements content = doc.getElementsByClass(targetHTMLElementClass_layer_0);
-
-        NewsData[] BBC_News = new NewsData[10];
-
-        int counter = 0;
-        for (Element oneNewsUnit : content) {
-            if (counter < 5) {
-                counter++;
+        Elements news = doc.getElementsByClass(News_Holder_CLASS);
+        if (verbose_mode) {
+            System.out.println("Found " + (news.size()) + " links: ");
+        }
+        for (Element el : news) {
+            Element link = el.select("a[href]").first();
+            Element time = el.getElementsByClass(TIME_CLASS_HOLDER).first();
+            if (link == null || time == null)
                 continue;
-            }
-
-            String article = oneNewsUnit.text();
-            String link = oneNewsUnit.select("a[href]").attr("href"); // "http://example.com/"
-
-            link = targetURL + link.substring(5);
-
-            // inner page parsing
-            {
-                Document innerNewsPage = Jsoup.connect(link).get();
-                Element innerNewsPageContent = innerNewsPage.select("div#page").select("div.story-body").first();
-
-                String innerArticle;
-
-                innerArticle = innerNewsPageContent.select("h1.story-body__h1").text();
-
-                article = innerArticle;
-            }
-
-            BBC_News[counter - 5] = new NewsData(link, article, "", "BBC");
-
             if (verbose_mode) {
-                System.out.println("Found " + content.size() + " top news: ");
-                System.out.println(String.valueOf(counter - 5) + ". " + BBC_News[counter - 5]);
-                System.out.println();
+                System.out.println(
+                        "text : " + link.text() +
+                                "\nlink : " + link.attr("abs:href") +
+                                "\ntime : " + time.attr("datetime").substring(0, 10).replaceAll("-", ".") +
+                                "\nsource : " + "BBC" + "\n\n");
             }
-
-            counter++;
+            newsDataList.add(new NewsData(
+                    link.attr("abs:href"),
+                    link.text(),
+                    time.attr("datetime").substring(0, 10).replaceAll("-", "."),
+                    "BBC"
+            ));
         }
 
-        return BBC_News;
+        NewsData[] BBC_News_Arr = new NewsData[newsDataList.size()];
+        return newsDataList.toArray(BBC_News_Arr);
     }
 }

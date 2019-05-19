@@ -33,7 +33,7 @@ public class HTML_Builder {
             }
             return resultFile;
         } catch (IOException | ClassNotFoundException | SQLException ioe) {
-            JavaHTTPServer.err("Error : can not build page : \n\t" + ioe.toString());
+            MyWindow.instance.writeLog("Error : can not build page : \n\t" + ioe.toString());
             return null;
         }
     }
@@ -57,7 +57,7 @@ public class HTML_Builder {
         builder.append("<tr>");
         builder.append("<th>NEWS</th>");
         builder.append("</tr>");
-        for (int i = 0; i < data.length; ++i) {
+        for (int i = data.length-1; i > data.length-100 && i >= 0; --i) {
             builder.append("<tr>");
             addCell(builder, data[i]);
             builder.append("</tr>");

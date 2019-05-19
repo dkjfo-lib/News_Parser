@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.util.Date;
 
 public class MyWindow extends JFrame {
+    public static  MyWindow instance;
+
     public static void main(String[] args) {
         MyWindow window = new MyWindow();
     }
@@ -17,23 +19,26 @@ public class MyWindow extends JFrame {
             "Start Timer", "Stop Timer"
     };
 
-    private JTextArea textArea;
+    private JTextArea messageLog;
     private ServerSocket serverSocket;
-    private ParsersTimer parsersTimer;
+    private final ParsersTimer parsersTimer;
 
     private MyWindow() {
+        instance = this;
+        parsersTimer = new ParsersTimer(this);
+
         JPanel mainPanel = getMainPanel();
         setContentPane(mainPanel);
-        textArea = new JTextArea();
-        textArea.setColumns(20);
-        textArea.setLineWrap(true);
-        textArea.setRows(5);
-        textArea.setWrapStyleWord(true);
-        textArea.setEditable(false);
-        JScrollPane jScrollPane1 = new JScrollPane(textArea);
-        textArea.setBorder(BorderFactory.createMatteBorder(
+        messageLog = new JTextArea();
+        messageLog.setColumns(20);
+        messageLog.setLineWrap(true);
+        messageLog.setRows(5);
+        messageLog.setWrapStyleWord(true);
+        messageLog.setEditable(false);
+        JScrollPane jScrollPane1 = new JScrollPane(messageLog);
+        messageLog.setBorder(BorderFactory.createMatteBorder(
                 1, 1, 1, 1, Color.black));
-        mainPanel.add(textArea, BorderLayout.CENTER);
+        mainPanel.add(jScrollPane1, BorderLayout.CENTER);
 
         JPanel lowPanel = new JPanel();
         lowPanel.setLayout(new GridLayout(2, 1));
@@ -61,12 +66,9 @@ public class MyWindow extends JFrame {
     }
 
     JComponent getLowTimerPanel() {
-        parsersTimer = new ParsersTimer(this);
         JLabel label = new JLabel();
         label.setText("Timer status : OFF");
 
-        JPanel holder = new JPanel();
-        holder.setLayout(new GridLayout(2, 1));
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
@@ -76,7 +78,7 @@ public class MyWindow extends JFrame {
         stopButton.setText("Stop Timer");
         stopButton.setEnabled(false);
         startButton.addActionListener((e) -> {
-            Thread timerThread = new Thread(parsersTimer );
+            Thread timerThread = new Thread(parsersTimer);
             timerThread.setDaemon(true);
             timerThread.start();
             startButton.setEnabled(false);
@@ -95,17 +97,6 @@ public class MyWindow extends JFrame {
         JPanel editPanel = new JPanel();
         editPanel.setLayout(new GridLayout(1, 2));
         editPanel.add(new Label("Timer delay in minutes : "));
-        JTextField timerDelayTF = new JTextField();
-        timerDelayTF.setText("20");
-        timerDelayTF.addActionListener((e)->{
-            parsersTimer.setDelay(30);
-            timerDelayTF.setText(String.valueOf(parsersTimer.getDelay()));
-        });
-        editPanel.add(timerDelayTF);
-
-        holder.add(editPanel);
-        holder.add(buttonPanel);
-
 
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new BorderLayout());
@@ -116,7 +107,7 @@ public class MyWindow extends JFrame {
         lowPanel.setBorder(BorderFactory.createMatteBorder(
                 1, 1, 1, 1, Color.black));
         lowPanel.add(labelPanel);
-        lowPanel.add(holder);
+        lowPanel.add(buttonPanel);
         return lowPanel;
     }
 
@@ -138,11 +129,15 @@ public class MyWindow extends JFrame {
                 Thread serverThread = new Thread(new Server(serverSocket, this));
                 serverThread.setDaemon(true);
                 serverThread.start();
-            } catch (IOException e1) {
+                label.setText("Server status : ON");
+                startButton.setEnabled(false);
+                stopButton.setEnabled(true);
+            } catch (Exception e1) {
+                writeLog("Server closed");
+                label.setText("Server status : OFF");
+                startButton.setEnabled(true);
+                stopButton.setEnabled(false);
             }
-            label.setText("Server status : ON");
-            startButton.setEnabled(false);
-            stopButton.setEnabled(true);
         });
         stopButton.addActionListener((e) -> {
             try {
@@ -172,6 +167,6 @@ public class MyWindow extends JFrame {
     }
 
     public void writeLog(String message) {
-        textArea.setText(new Date() + " : " + message + "\n" + textArea.getText());
+        messageLog.setText(" " + new Date() + " : " + message + "\n" + messageLog.getText());
     }
 }

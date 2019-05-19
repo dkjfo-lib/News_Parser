@@ -1,28 +1,22 @@
 package Parsers;
 
-import SQL.SQL_Adapter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import static java.lang.System.err;
-
-public class Parser_Google extends AbstractParser {
-
-    private static final String targetURL = "https://news.google.com/?hl=en-GB&gl=GB&ceid=GB:en";
-    private static final String TIME_CLASS_HOLDER = "WW6dff uQIVzc Sksgp";
-    private static final String SOURCE_HOLDER_CLASS = "wEwyrc AVN2gc uQIVzc Sksgp";
-    private static final String News_Holder_CLASS = " MQsxIb xTewfe tXImLc R7GTQ keNKEd keNKEd  dIehj EjqUne";
+public class Parser_TASS extends AbstractParser {
+    private static final String targetURL = "http://tass.com/world";
+    private static final String TIME_CLASS_HOLDER = "b-news-item__date";
+    private static final String News_Holder_CLASS = "b-news-item__text";
 
     private final boolean verbose_mode;
 
-    public Parser_Google(boolean verbose_mode) {
+    public Parser_TASS(boolean verbose_mode) {
         this.verbose_mode = verbose_mode;
     }
 
@@ -36,26 +30,23 @@ public class Parser_Google extends AbstractParser {
             System.out.println("Found " + (news.size()) + " links: ");
         }
         for (Element el : news) {
-            Element linkHolder = el.getElementsByTag("h4").first();
-            if (linkHolder == null)
-                continue;
-            Element link = linkHolder.select("a[href]").first();
-            Element source = el.getElementsByClass(SOURCE_HOLDER_CLASS).first();
+            Element article = el.getElementsByTag("a").first();
+            Element link = article.select("a[href]").first();
             Element time = el.getElementsByClass(TIME_CLASS_HOLDER).first();
-            if (link == null || source == null || time == null)
+            if (link == null || time == null)
                 continue;
             if (verbose_mode) {
                 System.out.println(
                         "text : " + link.text() +
                                 "\nlink : " + link.attr("abs:href") +
-                                "\ntime : " + time.attr("datetime").substring(0, 10).replaceAll("-", ".") +
-                                "\nsource : " + source.text() + "\n\n");
+                                "\ntime : " + time.text() +
+                                "\nsource : " + "TASS" + "\n\n");
             }
             newsDataList.add(new NewsData(
                     link.attr("abs:href"),
                     link.text(),
-                    time.attr("datetime").substring(0, 10).replaceAll("-", "."),
-                    source.text()
+                    time.text(),
+                    "TASS"
             ));
         }
 

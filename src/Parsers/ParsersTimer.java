@@ -41,7 +41,8 @@ public class ParsersTimer implements Runnable {
         out("Timer started");
         AbstractParser[] parsers = new AbstractParser[]{
                 new Parser_Google(false),
-                new Parser_BBC(false)
+                new Parser_BBC(false),
+                new Parser_TASS(false)
         };
         while (run) {
             out("Parsers started");

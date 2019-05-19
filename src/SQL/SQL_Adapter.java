@@ -1,10 +1,12 @@
 package SQL;
 
 import Parsers.NewsData;
+import Server.MyWindow;
 
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
+import com.mysql.jdbc.*;
 
 public class SQL_Adapter {
     private static final String USER_NAME = "root";
@@ -12,20 +14,20 @@ public class SQL_Adapter {
 
     private static final String JDBC_DRIVER = "com.mysql.cj.jdbc.Driver";
     private static final String SQL_TIME_ZONE = "?verifyServerCertificate=false&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
+    private static final String SQL_TIME_ZONE2 = "?useSSL=false&allowPublicKeyRetrieval=true&verifyServerCertificate=false&useSSL=false&useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
 
-    private static final String DB_root_URL = "jdbc:mysql://localhost:3306" + SQL_TIME_ZONE;
+    private static final String DB_root_URL = "jdbc:mysql://localhost:3306" + SQL_TIME_ZONE2;
     private static final String DB_name = "NewsData";
-    private static final String target_DB_URL = "jdbc:mysql://localhost:3306/" + DB_name + SQL_TIME_ZONE;
+    private static final String target_DB_URL = "jdbc:mysql://localhost:3306/" + DB_name + SQL_TIME_ZONE2;
     private static final String table_name = "News_test04";
 
     private static boolean initialized = false;
     private static final boolean VERBOSE_MODE = false;
 
     private static void Init() throws ClassNotFoundException, SQLException {
-        Class.forName(JDBC_DRIVER);
+//        Class.forName(JDBC_DRIVER);
         // create database if needed
         CreateDataBaseIfNeeded();
-        out("");
         // create table in new(old) database if needed
         CreateTableIfNeeded();
         initialized = true;
@@ -118,6 +120,6 @@ public class SQL_Adapter {
 
     static void out(String message) {
         if (VERBOSE_MODE)
-            System.out.println(message);
+            MyWindow.instance.writeLog(message);
     }
 }
